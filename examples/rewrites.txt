@@ -1,0 +1,10 @@
+# comments are allowed. spaces aren't.
+# single ip
+192.168.20.1,6000,192.168.120.1,6000
+# ip ranges
+192.168.20.1_192.168.20.20,443,192.168.20.20,8443
+F:www.google.com,443,F:safebrowsing.google.com,443
+# wildcards are supported too.
+F:*google.com,443,8.8.8.8,443
+# spaces are allowed to specify "multiple values" for ports and IP ranges.
+192.168.24.1 192.168.24.2,443 8443,F:google.com,443

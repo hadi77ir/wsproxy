@@ -1,0 +1,4 @@
+# comments are allowed. spaces aren't.
+allow,192.168.20.22,*
+# spaces are allowed to specify "multiple values" for ports and IP ranges.
+block,192.168.20.35,8000 9000 1000-2000
