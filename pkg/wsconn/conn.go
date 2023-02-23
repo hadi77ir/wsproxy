@@ -47,7 +47,10 @@ func (c *Conn) Write(b []byte) (n int, err error) {
 
 func (c *Conn) Close() error {
 	c.tryClose()
-	return c.base.Close()
+	// there is no need to close the underlying "base" connection.
+	// in the listener, it gets closed when handler returns, which is after we close "closed" channel.
+	// for dialed connections, closure should be handled by the underlying dialer. there is nothing more to do here.
+	return nil
 }
 
 func (c *Conn) LocalAddr() net.Addr {
