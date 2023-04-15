@@ -1,7 +1,7 @@
 wsproxy
 =======
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/buraksezer/gsocks5)](https://goreportcard.com/report/github.com/buraksezer/gsocks5)
+[![Go Report Card](https://goreportcard.com/badge/github.com/hadi77ir/wsproxy)](https://goreportcard.com/report/github.com/hadi77ir/wsproxy)
 
 Hassle-free and secure Websockify implementation in the [Go](https://golang.org) programming language.
 
