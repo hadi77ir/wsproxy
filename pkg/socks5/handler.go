@@ -30,7 +30,7 @@ func CreateSocks5Handler(addr string, transportParams url.Values) (proxy.ConnHan
 		return nil, err
 	}
 
-	return func(incoming net.Conn, logger logging.Logger, wg *sync.WaitGroup, done chan struct{}) {
+	return func(incoming net.Conn, logger logging.Logger, wg *sync.WaitGroup, done <-chan struct{}) {
 		if err := server.ServeConn(incoming); err != nil {
 			logger.Log(logging.ErrorLevel, "Error serving connection:", err)
 		}

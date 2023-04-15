@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type ConnHandlerFunc func(incoming net.Conn, logger logging.Logger, wg *sync.WaitGroup, done chan struct{})
+type ConnHandlerFunc func(incoming net.Conn, logger logging.Logger, wg *sync.WaitGroup, done <-chan struct{})
 type ConnHandlerCreatorFunc func(addr string, transportParams url.Values) (ConnHandlerFunc, error)
 
 var HandlerCreators = &registry.Registry[ConnHandlerCreatorFunc]{}
@@ -23,7 +23,7 @@ func CreateDirectDialHandler(addr string, transportParams url.Values) (ConnHandl
 }
 
 func PrimedDialerToHandler(addr string, dialer N.PrimedDialerFunc) (ConnHandlerFunc, error) {
-	return func(incoming net.Conn, logger logging.Logger, wg *sync.WaitGroup, done chan struct{}) {
+	return func(incoming net.Conn, logger logging.Logger, wg *sync.WaitGroup, done <-chan struct{}) {
 		rConn, err := dialer()
 		if err != nil {
 			logger.Log(logging.ErrorLevel, "Failed to dial", addr, err)
