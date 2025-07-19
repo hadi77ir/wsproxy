@@ -119,8 +119,6 @@ Also port can be in the following format:
 - `90 92`: 90 and 92
 - `^443`: all but 443
 
-A good thing is: You also have a Trojan implementation which is typically better than the SOCKS5 as it supports UDP too.
-
 Contributions
 -------------
 Please don't hesitate to fork the project and send a pull request or submit issues, but keep in mind that this project
@@ -139,6 +137,7 @@ Credits
 
 Todo
 --------
+- Trojan proxy server
 - gRPC connection, as implemented by [gun](https://github.com/Qv2ray/gun) and [v2ray-core](https://github.com/v2fly/v2ray-core/tree/e9943b5a7295ca76341c996a4937f7e03a5015f9/transport/internet/grpc)
 - toml/yaml configuration
 - Tests
