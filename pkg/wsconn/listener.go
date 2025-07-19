@@ -41,7 +41,7 @@ func (l *Listener) serve(listener net.Listener) {
 	close(l.backlog)
 }
 func (l *Listener) handle(response http.ResponseWriter, request *http.Request) {
-	if l.path != request.URL.Path {
+	if l.path != request.RequestURI {
 		http.NotFound(response, request)
 		return
 	}
@@ -94,7 +94,7 @@ func WSServe(addr string, backlog int, innerListener net.Listener, readBufSize, 
 	listener := &Listener{
 		server:  &http.Server{Addr: addr},
 		addr:    wsAddr(addr),
-		path:    u.Path,
+		path:    u.RequestURI(),
 		backlog: make(chan *Conn, backlog),
 		upgrader: &websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
