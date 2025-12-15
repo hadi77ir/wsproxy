@@ -177,3 +177,5 @@ fabric.properties
 # Self-signed certificate generated for testing
 cert.pem
 key.pem
+# Added by goreleaser init:
+dist/
