@@ -63,6 +63,7 @@ Transport Parameters
     To supply multiple private keys, separate them using commas (`,`).
   - `tls.insecure`: Disables certificate verification.
 - TLS Client and Server:
+  - `tls.sni`: Server Name Indicator
   - `tls.alpn`: Application Level Protocol Negotiation identifiers, separated by comma (`,`) 
   - `tls.cert`: TLS Certificate, required for servers and optional for clients. Clients must provide it if the server requires
     Client Authentication. To supply multiple certificates, separate their paths using colons (`:`).
@@ -77,7 +78,7 @@ Transport Parameters
 
 Note that multiple declaration of each option is not supported but some options support separators for multiple values.
 
-Bonus!
+Bonus! SOCKS Proxy Deployment
 ---------------------
 You may use it as `gsocks` client and server too! If you run your own simple SOCKS5 server on the server or in an even more
 complicated scenario, a Tor client instance, you may use this program to TLSify it.
@@ -137,7 +138,6 @@ Credits
 
 Todo
 --------
-- Trojan proxy server
-- gRPC connection, as implemented by [gun](https://github.com/Qv2ray/gun) and [v2ray-core](https://github.com/v2fly/v2ray-core/tree/e9943b5a7295ca76341c996a4937f7e03a5015f9/transport/internet/grpc)
+- gRPC connection (server and client), as implemented by [gun](https://github.com/Qv2ray/gun) and [v2ray-core](https://github.com/v2fly/v2ray-core/tree/e9943b5a7295ca76341c996a4937f7e03a5015f9/transport/internet/grpc)
 - toml/yaml configuration
 - Tests
