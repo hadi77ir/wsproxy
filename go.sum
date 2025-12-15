@@ -30,8 +30,6 @@ github.com/hadi77ir/go-logging v0.0.0-20221030142713-7ce400b91bb4 h1:Daqd1uMf1jg
 github.com/hadi77ir/go-logging v0.0.0-20221030142713-7ce400b91bb4/go.mod h1:wSYaYaoeH40nDbQxoVgSSBB5cVp9KivA3UAG2Tjk4I4=
 github.com/hadi77ir/go-registry v0.0.0-20230217041210-fe1d54c40419 h1:oGAaGnr0TNtBH+DlUuNTqzNHJx4u5wkDlyZEN5VZw/E=
 github.com/hadi77ir/go-registry v0.0.0-20230217041210-fe1d54c40419/go.mod h1:h30wRkn6wdqZVkwiFYGuyMgV1mLCSfe8ScU6XFbaZVA=
-github.com/hashicorp/logutils v1.0.0 h1:dLEQVugN8vlakKOUE3ihGLTZJRB4j+M2cdTm/ORI65Y=
-github.com/hashicorp/logutils v1.0.0/go.mod h1:QIAnNjmIWmVIIkWDTG1z5v++HQmx9WQRO+LraFDTW64=
 github.com/inconshreveable/mousetrap v1.0.1 h1:U3uMjPSQEBMNp1lFxmllqCPM6P5u/Xq7Pgzkat/bFNc=
 github.com/inconshreveable/mousetrap v1.0.1/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/jonboulle/clockwork v0.1.0/go.mod h1:Ii8DK3G1RaLaWxj9trq07+26W01tbo22gdxWY5EU2bo=

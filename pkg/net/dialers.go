@@ -1,16 +1,17 @@
 package net
 
 import (
+	"net"
+	"net/url"
+	"strings"
+	"time"
+
 	"github.com/hadi77ir/go-registry"
 	"github.com/hadi77ir/wsproxy/pkg/crypt"
 	"github.com/hadi77ir/wsproxy/pkg/errors"
 	"github.com/hadi77ir/wsproxy/pkg/utils"
 	"github.com/hadi77ir/wsproxy/pkg/wsconn"
 	utls "github.com/refraction-networking/utls"
-	"net"
-	"net/url"
-	"strings"
-	"time"
 )
 
 const defaultDialTimeout = time.Duration(5) * time.Second
@@ -74,6 +75,9 @@ func dialTLS(addr string, transportParams url.Values) (net.Conn, error) {
 }
 func dialTLSTransport(host string, transportParams url.Values) (net.Conn, error) {
 	config, helloId, err := crypt.ParseUTLS(transportParams, true)
+	if err != nil {
+		return nil, err
+	}
 
 	conn, err := dialTCPTransport(host, transportParams)
 	if err != nil {

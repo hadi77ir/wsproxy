@@ -1,13 +1,13 @@
 package wsconn
 
 import (
-	"github.com/gorilla/websocket"
-	E "github.com/hadi77ir/wsproxy/pkg/errors"
-	"log"
 	"net"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/gorilla/websocket"
+	E "github.com/hadi77ir/wsproxy/pkg/errors"
 )
 
 type Listener struct {
@@ -16,7 +16,6 @@ type Listener struct {
 	upgrader *websocket.Upgrader
 	server   *http.Server
 	path     string
-	logger   log.Logger
 	err      error
 }
 

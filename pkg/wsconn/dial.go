@@ -2,8 +2,9 @@ package wsconn
 
 import (
 	"context"
-	"github.com/gorilla/websocket"
 	"net"
+
+	"github.com/gorilla/websocket"
 )
 
 func DialWS(addr string) (net.Conn, error) {
