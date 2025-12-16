@@ -6,11 +6,12 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"net/url"
+	"strings"
+
 	E "github.com/hadi77ir/wsproxy/pkg/errors"
 	"github.com/hadi77ir/wsproxy/pkg/utils"
 	utls "github.com/refraction-networking/utls"
-	"net/url"
-	"strings"
 )
 
 var ErrProfileNotSupported = errors.New("profile not supported by uTLS library")
@@ -23,6 +24,7 @@ const (
 	ParamPrivateKey                     = "tls.key"
 	ParamCertificatePin                 = "tls.pin"
 	ParamInsecure                       = "tls.insecure"
+	ParamCA                             = "tls.ca"
 	ParamClientCA                       = "tls.clientca"
 	CertificatePinDigestMethodSeparator = ":"
 	MultipleValuesSeparator             = ","
@@ -225,6 +227,12 @@ func ParseUTLS(parameters url.Values, isClient bool) (config *utls.Config, hello
 		}
 		config.ClientCAs = clientCaPool
 		config.ClientAuth = clientAuth
+	} else {
+		caPool, _, err := LoadCertPoolFromParams(parameters, ParamCA)
+		if err != nil {
+			return nil, utls.ClientHelloID{}, err
+		}
+		config.RootCAs = caPool
 	}
 
 	certs, err := LoadX509PairsFromParams(parameters)
