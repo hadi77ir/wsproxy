@@ -224,15 +224,17 @@ func ParseUTLS(parameters url.Values, isClient bool) (config *utls.Config, hello
 		clientAuth := utls.NoClientCert
 		if clientCaLen > 0 {
 			clientAuth = utls.RequireAndVerifyClientCert
+			config.ClientCAs = clientCaPool
 		}
-		config.ClientCAs = clientCaPool
 		config.ClientAuth = clientAuth
 	} else {
-		caPool, _, err := LoadCertPoolFromParams(parameters, ParamCA)
+		caPool, caPoolLen, err := LoadCertPoolFromParams(parameters, ParamCA)
 		if err != nil {
 			return nil, utls.ClientHelloID{}, err
 		}
-		config.RootCAs = caPool
+		if caPoolLen > 0 {
+			config.RootCAs = caPool
+		}
 	}
 
 	certs, err := LoadX509PairsFromParams(parameters)
