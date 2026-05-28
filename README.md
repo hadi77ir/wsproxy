@@ -47,6 +47,7 @@ It takes two main arguments as positional arguments: Local Endpoint and Remote E
 
 Examples for endpoints are:
 - `tcp://127.0.0.1:9050`
+- `stdio://` or `-` for stdin/stdout tunneling
 - `tls://localhost:443`
 - `ws://mysite.com/wspoint`
 - `wss://mysite.com/wspoint`
@@ -58,13 +59,23 @@ Transport Parameters
 - WS Server and Client
   - `ws.read_buf` and `ws.write_buf`: Read and write buffer sizes. Both are numbers, in bytes. If set to zero, buffers from HTTP stack will be used. 
 - TLS Client:
-  - `tls.profile`: The client fingerprint to imitate during initial handshake.
+  - `tls.profile`: The client fingerprint to imitate during initial handshake. Supported aliases include `chrome`,
+    `firefox`, `ios`, `edge`, `android`, `safari`, `360`, `qq`, `randomized`, `randomized-alpn`,
+    `randomized-no-alpn`, `go`/`golang`, `custom`, and explicit profile versions such as `chrome,106`,
+    `firefox,105`, `ios,14`, `edge,85`, `safari,16.0`, `360,7.5`, and `qq,11.1`.
+  - `tls.fragment`: Fragment outbound TLS writes before the handshake. Set to `true` for the default
+    `0,1,10,20,0,0`, or provide `packetsFrom,packetsTo,lengthMin,lengthMax,delayMin,delayMax`, for example
+    `0,1,10,20,10ms,15ms` to fragment the ClientHello into 10-20 byte TLS records with 10-15ms delays.
   - `tls.pin`: Certificate pinning, enables safe and secure deployments using self-signed certificates. Format: `sha256:abcdef...`<br>
     To supply multiple private keys, separate them using commas (`,`).
   - `tls.insecure`: Disables certificate verification.
 - TLS Client and Server:
   - `tls.sni`: Server Name Indicator
-  - `tls.alpn`: Application Level Protocol Negotiation identifiers, separated by comma (`,`) 
+  - `tls.alpn`: Application Level Protocol Negotiation identifiers, separated by comma (`,`). Set it to `http/1.1`
+    to force HTTP/1.1 ALPN, or to `none`/`disabled` to disable ALPN.
+  - `tls.alpn.force_http11`: Force the ALPN extension to advertise only `http/1.1`.
+  - `tls.alpn.disable`: Disable the ALPN extension. For uTLS browser profiles this removes the profile's ALPN and
+    related application settings extensions.
   - `tls.cert`: TLS Certificate, required for servers and optional for clients. Clients must provide it if the server requires
     Client Authentication. To supply multiple certificates, separate their paths using colons (`:`).
   - `tls.key`: TLS Private Key, required for servers and optional for clients. Clients must provide it if the server requires
@@ -77,6 +88,15 @@ Transport Parameters
   - `tcp.dial_timeout`: Dial timeout. Default is 5s.
 
 Note that multiple declaration of each option is not supported but some options support separators for multiple values.
+
+STDIO mode
+----------
+Use `stdio://`, `-`, or `--` as the local endpoint to tunnel a single connection over stdin/stdout. This is intended for
+tools such as SSH `ProxyCommand`, similar to using `nc`.
+
+```sh
+ssh -o 'ProxyCommand=wsproxy - wss://mywebsite.com/ssh-ws --ro tls.alpn=http/1.1' user@target
+```
 
 Bonus! SOCKS Proxy Deployment
 ---------------------

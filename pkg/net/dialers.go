@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hadi77ir/fragmenter"
 	"github.com/hadi77ir/go-registry"
 	"github.com/hadi77ir/wsproxy/pkg/crypt"
 	"github.com/hadi77ir/wsproxy/pkg/errors"
@@ -22,6 +23,7 @@ type TransportDialFunc func(host string, transportParams url.Values) (net.Conn, 
 var Dialers = &registry.Registry[DialFunc]{}
 
 func registerDialers() {
+	Dialers.Register(StdioScheme, dialStdio)
 	Dialers.Register("tcp", dialTCP)
 	Dialers.Register("tls", dialTLS)
 	Dialers.Register("ws", newWSDialer(dialTCPTransport, "ws"))
@@ -84,7 +86,20 @@ func dialTLSTransport(host string, transportParams url.Values) (net.Conn, error)
 		return nil, err
 	}
 
+	fragmentConfig, err := crypt.GetFragmentConfigFromParams(transportParams)
+	if err != nil {
+		_ = conn.Close()
+		return nil, err
+	}
+	if fragmentConfig != nil {
+		conn = fragmenter.WrapConn(conn, fragmentConfig)
+	}
+
 	tlsConn := utls.UClient(conn, config, helloId)
+	if err = crypt.ApplyALPNPolicy(tlsConn, transportParams); err != nil {
+		_ = conn.Close()
+		return nil, err
+	}
 	err = tlsConn.Handshake()
 	if err != nil {
 		_ = conn.Close()

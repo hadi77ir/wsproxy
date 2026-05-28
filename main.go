@@ -10,7 +10,7 @@ import (
 func main() {
 	logger, err := logrus.New("wsproxy")
 	if err != nil {
-		log.Fatalf("failed to initialize logging facility:", err)
+		log.Fatalf("failed to initialize logging facility: %v", err)
 		return
 	}
 	_ = cmd.RootCmd.ExecuteContext(context.WithValue(context.Background(), "logger", logger))

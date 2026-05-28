@@ -1,11 +1,12 @@
 module github.com/hadi77ir/wsproxy
 
-go 1.19
+go 1.24
 
 require (
 	github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5
 	github.com/gertd/wild v0.0.1
 	github.com/gorilla/websocket v1.5.0
+	github.com/hadi77ir/fragmenter v0.0.0-20250625151243-1ba4d1ac37f3
 	github.com/hadi77ir/go-logging v0.0.0-20221030142713-7ce400b91bb4
 	github.com/hadi77ir/go-registry v0.0.0-20230217041210-fe1d54c40419
 	github.com/refraction-networking/utls v1.2.2
@@ -24,3 +25,5 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/sys v0.5.0 // indirect
 )
+
+replace github.com/hadi77ir/fragmenter => /devel/fragmenter

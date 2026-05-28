@@ -28,6 +28,7 @@ func SetBacklogSize(backlog int) error {
 }
 
 func registerListeners() {
+	Listeners.Register(StdioScheme, listenStdio)
 	Listeners.Register("tcp", listenTCP)
 	Listeners.Register("tls", listenTLS)
 	Listeners.Register("ws", newWSListener(listenTCP2))

@@ -32,6 +32,10 @@ func transformParams(uQ, tP url.Values) (filteredParams url.Values, transportPar
 }
 
 func ListenURL(addr string, transportParams url.Values) (net.Listener, error) {
+	if IsStdioAddr(addr) {
+		return listenStdio(addr, transportParams)
+	}
+
 	u, err := url.Parse(addr)
 	if err != nil {
 		return nil, err
@@ -47,6 +51,10 @@ func ListenURL(addr string, transportParams url.Values) (net.Listener, error) {
 }
 
 func DialURL(addr string, transportParams url.Values) (net.Conn, error) {
+	if IsStdioAddr(addr) {
+		return dialStdio(addr, transportParams)
+	}
+
 	u, err := url.Parse(addr)
 	if err != nil {
 		return nil, err
@@ -62,6 +70,12 @@ func DialURL(addr string, transportParams url.Values) (net.Conn, error) {
 }
 
 func CreateDialer(addr string, transportParams url.Values) (PrimedDialerFunc, error) {
+	if IsStdioAddr(addr) {
+		return func() (net.Conn, error) {
+			return dialStdio(addr, transportParams)
+		}, nil
+	}
+
 	u, err := url.Parse(addr)
 	if err != nil {
 		return nil, err

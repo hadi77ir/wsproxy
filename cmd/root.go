@@ -90,6 +90,8 @@ func getVersion() string {
 }
 
 func init() {
+	RootCmd.SetOut(os.Stderr)
+	RootCmd.SetErr(os.Stderr)
 	RootCmd.Version = getVersion()
 	toolchainVersion := fmt.Sprintf(GoVersionFormat, runtime.Version()) + "\n"
 	RootCmd.SetVersionTemplate(RootCmd.Name() + " " + getVersion() + "\n")

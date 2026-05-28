@@ -101,6 +101,10 @@ func (c *Proxy) Shutdown() {
 }
 
 func (c *Proxy) Run() error {
+	if c.isStdioMode() {
+		return c.runStdio()
+	}
+
 	var err error
 	c.connHandler, err = CreateHandler(c.remoteEndpoint.Addr, c.remoteEndpoint.TransportParams)
 	if err != nil {
@@ -143,4 +147,45 @@ func (c *Proxy) Run() error {
 		c.logger.Log(logging.WarnLevel, "Some goroutines will be stopped immediately")
 	}
 	return <-c.errChan
+}
+
+func (c *Proxy) isStdioMode() bool {
+	return N.IsStdioAddr(c.localEndpoint.Addr)
+}
+
+func (c *Proxy) runStdio() error {
+	var err error
+	c.connHandler, err = CreateHandler(c.remoteEndpoint.Addr, c.remoteEndpoint.TransportParams)
+	if err != nil {
+		return err
+	}
+
+	conn := N.NewStdioConn()
+	c.logger.Log(logging.InfoLevel, "Proxy runs on stdio")
+	c.wg.Add(1)
+	go c.proxyConn(conn)
+
+	ch := make(chan struct{})
+	go func() {
+		defer close(ch)
+		c.wg.Wait()
+	}()
+
+	select {
+	case <-c.signal:
+	case <-c.done:
+	case <-ch:
+		c.Shutdown()
+		return nil
+	}
+
+	c.Shutdown()
+	_ = conn.Close()
+
+	select {
+	case <-ch:
+	case <-time.After(time.Duration(10) * time.Second):
+		c.logger.Log(logging.WarnLevel, "Some goroutines will be stopped immediately")
+	}
+	return nil
 }
