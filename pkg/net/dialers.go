@@ -16,6 +16,7 @@ import (
 )
 
 const defaultDialTimeout = time.Duration(5) * time.Second
+const paramWSHost = "ws.host"
 
 type DialFunc func(addr string, transportParams url.Values) (net.Conn, error)
 type TransportDialFunc func(host string, transportParams url.Values) (net.Conn, error)
@@ -119,6 +120,7 @@ func newWSDialer(transportDialer TransportDialFunc, scheme string) DialFunc {
 		if !strings.EqualFold(u.Scheme, scheme) {
 			return nil, errors.ErrUnsupportedScheme
 		}
+		wsHost := utils.StringFromParameters(transportParams, paramWSHost, "")
 
 		wsTransportParams := transportParams
 		if strings.EqualFold(scheme, "wss") && !crypt.HasALPNPolicy(transportParams) {
@@ -132,7 +134,7 @@ func newWSDialer(transportDialer TransportDialFunc, scheme string) DialFunc {
 		}
 
 		if strings.EqualFold(getNegotiatedProtocol(baseConn), "h2") {
-			conn, err := wsconn.H2Client(addr, baseConn)
+			conn, err := wsconn.H2Client(addr, baseConn, wsHost)
 			if err != nil {
 				_ = baseConn.Close()
 				if !crypt.HasALPNPolicy(transportParams) {
@@ -142,8 +144,9 @@ func newWSDialer(transportDialer TransportDialFunc, scheme string) DialFunc {
 					if err != nil {
 						return nil, err
 					}
-					return wsconn.WSClient(addr,
+					return wsconn.WSClientWithHost(addr,
 						baseConn,
+						wsHost,
 						utils.IntegerFromParameters(transportParams, "ws.read_buffer", 0),
 						utils.IntegerFromParameters(transportParams, "ws.write_buffer", 0))
 				}
@@ -152,8 +155,9 @@ func newWSDialer(transportDialer TransportDialFunc, scheme string) DialFunc {
 			return conn, nil
 		}
 
-		conn, err := wsconn.WSClient(addr,
+		conn, err := wsconn.WSClientWithHost(addr,
 			baseConn,
+			wsHost,
 			utils.IntegerFromParameters(transportParams, "ws.read_buffer", 0),
 			utils.IntegerFromParameters(transportParams, "ws.write_buffer", 0))
 

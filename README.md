@@ -88,6 +88,8 @@ paths as noted below.
 
 ### WebSocket client and server
 
+- `ws.host`: Override the HTTP `Host` header for HTTP/1.1 WebSockets and the `:authority` pseudo-header for HTTP/2
+  WebSockets. Useful when dialing an IP address while the virtual host is a domain.
 - `ws.read_buffer`: WebSocket read buffer size in bytes. Default: `0`, which lets the HTTP/WebSocket stack choose.
 - `ws.write_buffer`: WebSocket write buffer size in bytes. Default: `0`, which lets the HTTP/WebSocket stack choose.
 

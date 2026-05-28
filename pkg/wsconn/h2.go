@@ -37,13 +37,16 @@ type h2StreamConn struct {
 	once     sync.Once
 }
 
-func H2Client(addr string, conn net.Conn) (net.Conn, error) {
+func H2Client(addr string, conn net.Conn, host string) (net.Conn, error) {
 	u, err := url.Parse(addr)
 	if err != nil {
 		return nil, err
 	}
 	if u.Path == "" {
 		u.Path = "/"
+	}
+	if host == "" {
+		host = u.Host
 	}
 
 	h2conn := &h2StreamConn{
@@ -55,7 +58,7 @@ func H2Client(addr string, conn net.Conn) (net.Conn, error) {
 	if err := h2conn.clientPreface(); err != nil {
 		return nil, err
 	}
-	if err := h2conn.writeConnectHeaders(u); err != nil {
+	if err := h2conn.writeConnectHeaders(u, host); err != nil {
 		return nil, err
 	}
 	if err := h2conn.readConnectResponse(); err != nil {
@@ -121,7 +124,7 @@ func (c *h2StreamConn) clientPreface() error {
 	}
 }
 
-func (c *h2StreamConn) writeConnectHeaders(u *url.URL) error {
+func (c *h2StreamConn) writeConnectHeaders(u *url.URL, host string) error {
 	var buf bytes.Buffer
 	encoder := hpack.NewEncoder(&buf)
 	scheme := "https"
@@ -131,7 +134,7 @@ func (c *h2StreamConn) writeConnectHeaders(u *url.URL) error {
 	headers := []hpack.HeaderField{
 		{Name: ":method", Value: "CONNECT"},
 		{Name: ":scheme", Value: scheme},
-		{Name: ":authority", Value: u.Host},
+		{Name: ":authority", Value: host},
 		{Name: ":path", Value: u.RequestURI()},
 		{Name: ":protocol", Value: "websocket"},
 		{Name: "user-agent", Value: "wsproxy"},

@@ -3,6 +3,7 @@ package wsconn
 import (
 	"context"
 	"net"
+	"net/http"
 
 	"github.com/gorilla/websocket"
 )
@@ -21,6 +22,10 @@ func DialCustomWS(addr string, dialer *websocket.Dialer) (net.Conn, error) {
 }
 
 func WSClient(addr string, conn net.Conn, readBufSize, writeBufSize int) (net.Conn, error) {
+	return WSClientWithHost(addr, conn, "", readBufSize, writeBufSize)
+}
+
+func WSClientWithHost(addr string, conn net.Conn, host string, readBufSize, writeBufSize int) (net.Conn, error) {
 	dialer := websocket.Dialer{
 		NetDialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
 			return conn, nil
@@ -32,7 +37,11 @@ func WSClient(addr string, conn net.Conn, readBufSize, writeBufSize int) (net.Co
 		WriteBufferSize: writeBufSize,
 	}
 
-	ws, _, err := dialer.Dial(addr, nil)
+	var header http.Header
+	if host != "" {
+		header = http.Header{"Host": []string{host}}
+	}
+	ws, _, err := dialer.Dial(addr, header)
 	if err != nil {
 		return nil, err
 	}
