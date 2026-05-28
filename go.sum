@@ -26,6 +26,8 @@ github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510/go.mod h1:pupxD2MaaD3
 github.com/googleapis/gax-go v0.0.0-20161107002406-da06d194a00e/go.mod h1:SFVmujtThgffbyetf+mdk2eWhX2bMyUtNHzFKcPA9HY=
 github.com/gorilla/websocket v1.5.0 h1:PPwGk2jz7EePpoHN/+ClbZu8SPxiqlu12wZP/3sWmnc=
 github.com/gorilla/websocket v1.5.0/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
+github.com/hadi77ir/fragmenter v0.0.0-20250625151243-1ba4d1ac37f3 h1:wOyZ90o/MVp+TU9Af15qwHrv6LDS1eMpkCvEECIMdzg=
+github.com/hadi77ir/fragmenter v0.0.0-20250625151243-1ba4d1ac37f3/go.mod h1:K/RDqw3Q8MEZk3N1+OLwWG+IqhbhyRoqh9nq2oXQoW8=
 github.com/hadi77ir/go-logging v0.0.0-20221030142713-7ce400b91bb4 h1:Daqd1uMf1jgvTvGoQtKeBxG8rQDq5lwM+u+TiBaP46A=
 github.com/hadi77ir/go-logging v0.0.0-20221030142713-7ce400b91bb4/go.mod h1:wSYaYaoeH40nDbQxoVgSSBB5cVp9KivA3UAG2Tjk4I4=
 github.com/hadi77ir/go-registry v0.0.0-20230217041210-fe1d54c40419 h1:oGAaGnr0TNtBH+DlUuNTqzNHJx4u5wkDlyZEN5VZw/E=
