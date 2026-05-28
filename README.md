@@ -43,51 +43,140 @@ wsproxy "tcp://127.0.0.1:3306" "wss://mywebsite.com/mysql-ws"
 
 Configuration
 -------------
-It takes two main arguments as positional arguments: Local Endpoint and Remote Endpoint, speaking of which, both are in URL format.
+It takes two positional arguments: `LOCAL` and `REMOTE`.
 
-Examples for endpoints are:
+```sh
+wsproxy [flags] LOCAL REMOTE
+```
+
+Each endpoint is normally a URL. Supported endpoint schemes are:
+
 - `tcp://127.0.0.1:9050`
-- `stdio://` or `-` for stdin/stdout tunneling
 - `tls://localhost:443`
 - `ws://mysite.com/wspoint`
 - `wss://mysite.com/wspoint`
+- `socks5://`
+- `stdio://`, `-`, or `--` for stdin/stdout tunneling
 
-Transport parameter configuration and tuning is done through `--ro` and `--lo` options.
+`LOCAL` is listened on or accepted from. `REMOTE` is dialed or handled for each incoming connection. `socks5://` is a
+remote handler endpoint that runs the built-in SOCKS5 server on the accepted connection.
+
+CLI flags:
+
+- `--lo`, `-l`: transport parameters for the local endpoint, one `key=value` per flag.
+- `--ro`, `-r`: transport parameters for the remote endpoint, one `key=value` per flag.
+- `--help`, `-h`: print help to stderr.
+- `--version`, `-v`: print version information to stderr.
+
+Transport parameters can also be placed in endpoint query strings. Query parameters whose names start with `tcp.`, `tls.`,
+or `ws.` are treated as transport parameters. Other query parameters remain part of the endpoint URL and are passed to the
+endpoint handler, such as `socks5://?socks5.action=deny`.
+
+Environment variables:
+
+- `LOG_LEVEL`: log level passed to the logging backend, such as `debug`, `info`, `warn`, or `error`.
 
 Transport Parameters
 -----------------------
-- WS Server and Client
-  - `ws.read_buf` and `ws.write_buf`: Read and write buffer sizes. Both are numbers, in bytes. If set to zero, buffers from HTTP stack will be used. 
-- TLS Client:
-  - `tls.profile`: The client fingerprint to imitate during initial handshake. Supported aliases include `chrome`,
-    `firefox`, `ios`, `edge`, `android`, `safari`, `360`, `qq`, `randomized`, `randomized-alpn`,
-    `randomized-no-alpn`, `go`/`golang`, `custom`, and explicit profile versions such as `chrome,106`,
-    `firefox,105`, `ios,14`, `edge,85`, `safari,16.0`, `360,7.5`, and `qq,11.1`.
-  - `tls.fragment`: Fragment outbound TLS writes before the handshake. Set to `true` for the default
-    `0,1,10,20,0,0`, or provide `packetsFrom,packetsTo,lengthMin,lengthMax,delayMin,delayMax`, for example
-    `0,1,10,20,10ms,15ms` to fragment the ClientHello into 10-20 byte TLS records with 10-15ms delays.
-  - `tls.pin`: Certificate pinning, enables safe and secure deployments using self-signed certificates. Format: `sha256:abcdef...`<br>
-    To supply multiple private keys, separate them using commas (`,`).
-  - `tls.insecure`: Disables certificate verification.
-- TLS Client and Server:
-  - `tls.sni`: Server Name Indicator
-  - `tls.alpn`: Application Level Protocol Negotiation identifiers, separated by comma (`,`). Set it to `http/1.1`
-    to force HTTP/1.1 ALPN, or to `none`/`disabled` to disable ALPN.
-  - `tls.alpn.force_http11`: Force the ALPN extension to advertise only `http/1.1`.
-  - `tls.alpn.disable`: Disable the ALPN extension. For uTLS browser profiles this removes the profile's ALPN and
-    related application settings extensions.
-  - `tls.cert`: TLS Certificate, required for servers and optional for clients. Clients must provide it if the server requires
-    Client Authentication. To supply multiple certificates, separate their paths using colons (`:`).
-  - `tls.key`: TLS Private Key, required for servers and optional for clients. Clients must provide it if the server requires
-    Client Authentication. To supply multiple private keys, separate their paths using colons (`:`).
-- TLS Server: 
-  - `tls.clientca`: TLS Client Certificate Authorities. Optional. If set, users will be required to authenticate using a certificate that has to be signed with these certificates.
-    To supply multiple Client CAs, separate their paths using colons (`:`).
-- TCP Client:
-  - `tcp.keepalive`: TCP Keepalive. Default is disabled.
-  - `tcp.dial_timeout`: Dial timeout. Default is 5s.
+Multiple declarations of the same option are not supported. Some options accept comma-separated values or colon-separated
+paths as noted below.
 
-Note that multiple declaration of each option is not supported but some options support separators for multiple values.
+### TCP client
+
+- `tcp.dial_timeout`: TCP dial timeout. Go duration string. Default: `5s`.
+- `tcp.keepalive`: TCP keepalive period. Go duration string. Default: disabled. Example: `30s`.
+
+### WebSocket client and server
+
+- `ws.read_buffer`: WebSocket read buffer size in bytes. Default: `0`, which lets the HTTP/WebSocket stack choose.
+- `ws.write_buffer`: WebSocket write buffer size in bytes. Default: `0`, which lets the HTTP/WebSocket stack choose.
+
+`wss://` clients support WebSockets over HTTP/2 using RFC 8441 extended CONNECT when TLS negotiates `h2` and the peer
+advertises `SETTINGS_ENABLE_CONNECT_PROTOCOL`. If the peer negotiates `h2` without RFC 8441 support, clients
+automatically retry with HTTP/1.1 unless ALPN was explicitly configured.
+
+### TLS client and server
+
+- `tls.sni`: Server Name Indication value. Used by TLS clients. Also available to server config as the configured server
+  name.
+- `tls.alpn`: ALPN protocol identifiers separated by comma. Examples: `h2,http/1.1`, `http/1.1`. Set to `none`,
+  `off`, `disable`, `disabled`, `noalpn`, or `no-alpn` to disable ALPN.
+- `tls.alpn.force_http11`: Boolean. Force ALPN to only `http/1.1`.
+- `tls.alpn.disable`: Boolean. Disable ALPN. For uTLS browser profiles this removes the profile's ALPN and related
+  application settings extensions.
+- `tls.cert`: Certificate path. Required for TLS servers. Optional for clients when client certificate authentication is
+  required by the server. Multiple certificate paths are separated with `:`.
+- `tls.key`: Private key path matching `tls.cert`. Required whenever `tls.cert` is set. Multiple private key paths are
+  separated with `:`.
+
+Certificate and key path values may also be inline data using `base64:` or `base32:` prefixes.
+
+### TLS client only
+
+- `tls.profile`: uTLS ClientHello profile. Default: Go's standard TLS profile.
+- `tls.fragment`: Fragment outbound TLS writes before the handshake. Set to `true` for default `0,1,10,20,0,0`, or
+  provide `packetsFrom,packetsTo,lengthMin,lengthMax,delayMin,delayMax`. Example:
+  `0,1,10,20,10ms,15ms`.
+- `tls.pin`: Certificate public key pinning. Format: `digest:hex`, with multiple pins separated by comma. Supported
+  digest names are `sha1`, `sha224`, `sha256`, `sha384`, `sha512`, and `sha3`.
+- `tls.insecure`: Boolean. Disable certificate verification.
+- `tls.ca`: CA certificate path for verifying the server. Multiple CA paths are separated with `:`.
+
+Supported `tls.profile` aliases include:
+
+- `go`, `golang`
+- `custom`
+- `random`, `randomized`, `randomized-alpn`, `randomized-no-alpn`, `random-no-alpn`, `randomized-without-alpn`
+- `chrome`, `chrome-auto`, `chrome-58`, `chrome-62`, `chrome-70`, `chrome-72`, `chrome-83`, `chrome-87`,
+  `chrome-96`, `chrome-100`, `chrome-102`, `chrome-106`, `chrome-106-shuffle`
+- `firefox`, `firefox-auto`, `firefox-55`, `firefox-56`, `firefox-63`, `firefox-65`, `firefox-99`,
+  `firefox-102`, `firefox-105`
+- `ios`, `ios-auto`, `ios-11.1`, `ios-12.1`, `ios-13`, `ios-14`
+- `android`, `android-11`, `android-11-okhttp`
+- `edge`, `edge-auto`, `edge-85`, `edge-106`
+- `safari`, `safari-auto`, `safari-16.0`
+- `360`, `360-auto`, `360-7.5`, `360-11.0`
+- `qq`, `qq-auto`, `qq-11.1`
+
+Profiles may also be written as `client,version`, `client:version`, `client/version`, `client_version`, or
+`client-version`, such as `chrome,106` or `firefox-105`.
+
+### TLS server only
+
+- `tls.clientca`: Client CA certificate path. If set, clients must present a certificate signed by one of these CAs.
+  Multiple Client CA paths are separated with `:`.
+
+### SOCKS5 handler
+
+These options apply to `socks5://` remote endpoints and may be supplied through `--ro` or in the `socks5://` URL query.
+
+- `socks5.username`: Username for simple username/password authentication. Must be used with `socks5.password`.
+- `socks5.password`: Password for simple username/password authentication. Must be used with `socks5.username`.
+- `socks5.credentials`: Path or inline data for an additional credentials file. Each non-comment line is
+  `username:password`.
+- `socks5.action`: Default action when no ruleset rule matches. Values: `allow`, `accept`, `approve`, `deny`, `reject`,
+  or `block`. Default: `allow`.
+- `socks5.ruleset`: Path or inline data for a ruleset file. Each line is `ACTION,ADDRESS,PORT`.
+- `socks5.rewrites`: Path or inline data for a rewrite file. Each line is `ADDRESS,PORT,TARGET_ADDRESS,TARGET_PORT`.
+
+Ruleset `ACTION` values are `allow`/`accept`/`approve` or `deny`/`reject`/`block`.
+
+Rule and rewrite addresses can be:
+
+- `F:google.com`
+- `F:www.*exam*le.co*`
+- `F:*.google.com`
+- `192.168.0.0/24`
+- `192.168.10.0-192.168.20.40`
+- `192.168.10.10`
+
+Ports can be:
+
+- `*`: all ports
+- `90`: exactly port 90
+- `90-800`: ports from 90 up to, but not including, 800
+- `90 92`: port 90 or port 92
+- `^443`: all ports except 443
 
 STDIO mode
 ----------
@@ -118,27 +207,8 @@ On your client:
 wsproxy tcp://127.0.0.1:1080/ tls://myserver.com:8443/
 ```
 
-This SOCKS5 server supports authentication, ruleset and rewrites and these are configurable through both transport parameters and
-URL query parameters.
-- `socks5.username` and `socks5.password`: For a simple single-user authentication method, you may use this. 
-- `socks5.credentials`: For a multi-user authentication method, you may supply a file containing credentials. Usernames and passwords are separated by colons (`:`) in each line.
-- `socks5.ruleset`: Path to a file containing ruleset in the following format: `ACTION,ADDRESS,PORT` in each line, where action can be any of "allow" and "deny" and address can be either IPv4 address, CIDR range, FQDN with wildcard support.
-- `socks5.rewrites`: Path to a file containing `ADDRESS,PORT,TARGETADDR,TARGETPORT` in lines.
-
-Addresses can be in the following format:
-- `F:google.com`
-- `F:www.*exam*le.co*`
-- `F:*.google.com`
-- `192.168.0.0/24`
-- `192.168.10.0-192.168.20.40`
-- `192.168.10.10`
-
-Also port can be in the following format:
-- `*`: all
-- `90`: just 90
-- `90-800`: 90 to 800
-- `90 92`: 90 and 92
-- `^443`: all but 443
+The built-in SOCKS5 server supports authentication, rulesets, and rewrites. See the SOCKS5 handler options in
+Transport Parameters above.
 
 Contributions
 -------------

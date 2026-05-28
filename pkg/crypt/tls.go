@@ -221,6 +221,13 @@ func GetNextProtosFromParams(parameters url.Values) []string {
 	return filtered
 }
 
+func HasALPNPolicy(parameters url.Values) bool {
+	_, hasNextProtos := utils.GetParameter(parameters, ParamNextProtos)
+	_, hasDisable := utils.GetParameter(parameters, ParamDisableALPN)
+	_, hasForceHTTP11 := utils.GetParameter(parameters, ParamForceHTTP11ALPN)
+	return hasNextProtos || hasDisable || hasForceHTTP11
+}
+
 func ShouldDisableALPN(parameters url.Values) bool {
 	if value, found := utils.GetParameter(parameters, ParamDisableALPN); found {
 		return utils.StrIsTrue(value)

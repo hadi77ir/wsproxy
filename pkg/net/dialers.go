@@ -120,9 +120,36 @@ func newWSDialer(transportDialer TransportDialFunc, scheme string) DialFunc {
 			return nil, errors.ErrUnsupportedScheme
 		}
 
-		baseConn, err := transportDialer(addDefaultPort(u.Host, scheme), transportParams)
+		wsTransportParams := transportParams
+		if strings.EqualFold(scheme, "wss") && !crypt.HasALPNPolicy(transportParams) {
+			wsTransportParams = cloneValues(transportParams)
+			wsTransportParams.Set(crypt.ParamNextProtos, "h2,http/1.1")
+		}
+
+		baseConn, err := transportDialer(addDefaultPort(u.Host, scheme), wsTransportParams)
 		if err != nil {
 			return nil, err
+		}
+
+		if strings.EqualFold(getNegotiatedProtocol(baseConn), "h2") {
+			conn, err := wsconn.H2Client(addr, baseConn)
+			if err != nil {
+				_ = baseConn.Close()
+				if !crypt.HasALPNPolicy(transportParams) {
+					http11Params := cloneValues(transportParams)
+					http11Params.Set(crypt.ParamNextProtos, "http/1.1")
+					baseConn, err = transportDialer(addDefaultPort(u.Host, scheme), http11Params)
+					if err != nil {
+						return nil, err
+					}
+					return wsconn.WSClient(addr,
+						baseConn,
+						utils.IntegerFromParameters(transportParams, "ws.read_buffer", 0),
+						utils.IntegerFromParameters(transportParams, "ws.write_buffer", 0))
+				}
+				return nil, err
+			}
+			return conn, nil
 		}
 
 		conn, err := wsconn.WSClient(addr,
@@ -148,4 +175,23 @@ func addDefaultPort(host string, scheme string) string {
 		}
 	}
 	return host
+}
+
+func cloneValues(values url.Values) url.Values {
+	cloned := make(url.Values, len(values))
+	for key, value := range values {
+		cloned[key] = append([]string(nil), value...)
+	}
+	return cloned
+}
+
+type connectionStateProvider interface {
+	ConnectionState() utls.ConnectionState
+}
+
+func getNegotiatedProtocol(conn net.Conn) string {
+	if provider, ok := conn.(connectionStateProvider); ok {
+		return provider.ConnectionState().NegotiatedProtocol
+	}
+	return ""
 }
